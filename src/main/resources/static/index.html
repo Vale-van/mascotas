@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>PetManager — Sistema de Gestión</title>
+  <title>Pet Control — Sistema de Gestión</title>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
   <style>
     :root {
@@ -436,19 +436,19 @@
 
   <div class="nav-label">Módulos</div>
   <div class="nav-item active" onclick="showPage('dashboard')">
-    <span class="nav-icon">📊</span> Dashboard
+    <span class="nav-icon"></span> Dashboard
   </div>
   <div class="nav-item" onclick="showPage('clientes')">
-    <span class="nav-icon">👤</span> Clientes
+    <span class="nav-icon"></span> Clientes
   </div>
   <div class="nav-item" onclick="showPage('mascotas')">
-    <span class="nav-icon">🐾</span> Mascotas
+    <span class="nav-icon"></span> Mascotas
   </div>
   <div class="nav-item" onclick="showPage('servicios')">
-    <span class="nav-icon">✂️</span> Servicios
+    <span class="nav-icon">✂</span> Servicios
   </div>
   <div class="nav-item" onclick="showPage('direcciones')">
-    <span class="nav-icon">📍</span> Direcciones
+    <span class="nav-icon"></span> Direcciones
   </div>
 
   <div class="api-status">
@@ -490,9 +490,9 @@
       <div style="font-family:var(--font-head);font-size:18px;font-weight:700;margin-bottom:8px;">Accesos rápidos</div>
       <div style="color:var(--text-muted);font-size:14px;margin-bottom:20px;">Navega a cualquier módulo desde el menú lateral.</div>
       <div style="display:flex;gap:12px;flex-wrap:wrap;">
-        <button class="btn btn-primary" onclick="showPage('clientes')">👤 Ver Clientes</button>
-        <button class="btn btn-edit" onclick="showPage('mascotas')">🐾 Ver Mascotas</button>
-        <button class="btn btn-danger" onclick="showPage('servicios')">✂️ Ver Servicios</button>
+        <button class="btn btn-primary" onclick="showPage('clientes')"> Ver Clientes</button>
+        <button class="btn btn-edit" onclick="showPage('mascotas')"> Ver Mascotas</button>
+        <button class="btn btn-danger" onclick="showPage('servicios')">✂ Ver Servicios</button>
       </div>
     </div>
   </div>
