@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PetManager</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #F9F9F7; --white: #FFFFFF; --border: #E8E8E4; --border-dark: #D0D0CA;
+      --text: #1A1A18; --text-muted: #8A8A82; --text-light: #AFAFA6;
+      --accent: #2D6A4F; --accent-light: #E8F3EE;
+      --accent2: #C0392B; --accent2-light: #FCECEA;
+      --accent3: #B5620A; --accent3-light: #FDF3E7;
+      --radius: 10px; --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; font-size: 14px; line-height: 1.6; min-height: 100vh; display: flex; }
+    .sidebar { width: 220px; min-height: 100vh; background: var(--white); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 28px 16px; position: fixed; top: 0; left: 0; }
+    .logo { padding: 0 8px; margin-bottom: 32px; }
+    .logo-title { font-family: 'Playfair Display', serif; font-size: 20px; color: var(--text); }
+    .logo-sub { font-size: 11px; color: var(--text-light); margin-top: 2px; }
+    .nav-section { font-size: 10px; font-weight: 600; letter-spacing: 1.2px; text-transform: uppercase; color: var(--text-light); padding: 0 8px; margin-bottom: 8px; }
+    .nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 7px; cursor: pointer; transition: all 0.15s; margin-bottom: 2px; color: var(--text-muted); font-weight: 400; }
+    .nav-item:hover { background: var(--bg); color: var(--text); }
+    .nav-item.active { background: var(--accent-light); color: var(--accent); font-weight: 500; }
+    .nav-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; opacity: 0.5; flex-shrink: 0; }
+    .nav-item.active .nav-dot { opacity: 1; }
+    .sidebar-footer { margin-top: auto; padding: 12px 10px; background: var(--bg); border-radius: var(--radius); border: 1px solid var(--border); }
+    .sidebar-footer-label { font-size: 10px; color: var(--text-light); margin-bottom: 4px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.8px; }
+    .sidebar-footer-url { font-size: 11px; color: var(--accent); word-break: break-all; line-height: 1.4; }
+    .status-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); margin-right: 5px; animation: pulse 2.5s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+    .main { margin-left: 220px; flex: 1; padding: 40px 48px; }
+    .page { display: none; }
+    .page.active { display: block; animation: fadeUp 0.25s ease; }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+    .topbar { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 32px; padding-bottom: 24px; border-bottom: 1px solid var(--border); }
+    .page-label { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 1px; color: var(--text-light); margin-bottom: 4px; }
+    .page-title { font-family: 'Playfair Display', serif; font-size: 28px; color: var(--text); letter-spacing: -0.5px; }
+    .btn { padding: 8px 16px; border-radius: 7px; border: 1px solid transparent; cursor: pointer; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 500; transition: all 0.15s; line-height: 1; }
+    .btn-primary { background: var(--text); color: var(--white); border-color: var(--text); }
+    .btn-primary:hover { background: #333; }
+    .btn-ghost { background: transparent; color: var(--text-muted); border-color: var(--border-dark); }
+    .btn-ghost:hover { background: var(--bg); color: var(--text); }
+    .btn-danger { background: transparent; color: var(--accent2); border-color: transparent; font-size: 12px; padding: 5px 10px; }
+    .btn-danger:hover { background: var(--accent2-light); }
+    .btn-edit { background: transparent; color: var(--text-muted); border-color: transparent; font-size: 12px; padding: 5px 10px; }
+    .btn-edit:hover { background: var(--bg); color: var(--text); }
+    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+    .stat { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 22px; }
+    .stat-label { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-light); margin-bottom: 8px; }
+    .stat-value { font-family: 'Playfair Display', serif; font-size: 32px; color: var(--text); line-height: 1; }
+    .table-wrap { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+    .table-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .table-title { font-size: 13px; font-weight: 600; color: var(--text); }
+    .table-count { font-size: 12px; color: var(--text-light); background: var(--bg); padding: 3px 10px; border-radius: 20px; border: 1px solid var(--border); }
+    table { width: 100%; border-collapse: collapse; }
+    thead th { padding: 10px 20px; text-align: left; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-light); background: var(--bg); border-bottom: 1px solid var(--border); }
+    tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: #FAFAF8; }
+    tbody td { padding: 13px 20px; font-size: 13px; color: var(--text); vertical-align: middle; }
+    .td-muted { color: var(--text-muted); }
+    .td-actions { display: flex; gap: 4px; align-items: center; }
+    .badge { display: inline-block; padding: 2px 9px; border-radius: 20px; font-size: 11px; font-weight: 500; }
+    .badge-green { background: var(--accent-light); color: var(--accent); }
+    .badge-red { background: var(--accent2-light); color: var(--accent2); }
+    .empty { padding: 64px 20px; text-align: center; color: var(--text-light); }
+    .empty-icon { font-size: 32px; margin-bottom: 12px; opacity: 0.5; }
+    .empty-title { font-size: 14px; font-weight: 500; color: var(--text-muted); margin-bottom: 4px; }
+    .empty-sub { font-size: 12px; }
+    .loading { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 48px; color: var(--text-light); font-size: 13px; }
+    .spinner { width: 16px; height: 16px; border: 1.5px solid var(--border-dark); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.25); backdrop-filter: blur(3px); z-index: 1000; align-items: center; justify-content: center; }
+    .overlay.open { display: flex; }
+    .modal { background: var(--white); border: 1px solid var(--border); border-radius: 12px; padding: 28px; width: 420px; box-shadow: var(--shadow-md); animation: modalIn 0.2s ease; }
+    @keyframes modalIn { from{opacity:0;transform:scale(0.97) translateY(6px)} to{opacity:1;transform:scale(1) translateY(0)} }
+    .modal-title { font-family: 'Playfair Display', serif; font-size: 20px; margin-bottom: 20px; color: var(--text); }
+    .form-group { margin-bottom: 14px; }
+    .form-label { display: block; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-muted); margin-bottom: 5px; }
+    .form-input { width: 100%; padding: 9px 12px; background: var(--bg); border: 1px solid var(--border-dark); border-radius: 7px; color: var(--text); font-family: 'Inter', sans-serif; font-size: 13px; outline: none; transition: border-color 0.15s; }
+    .form-input:focus { border-color: var(--accent); background: var(--white); }
+    select.form-input option { background: var(--white); }
+    .modal-footer { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); }
+    .toast { position: fixed; bottom: 20px; right: 20px; background: var(--text); color: var(--white); border-radius: 8px; padding: 11px 18px; font-size: 13px; z-index: 9999; opacity: 0; transform: translateY(6px); transition: all 0.25s; pointer-events: none; }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast.error { background: var(--accent2); }
+    .dash-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-top: 24px; }
+    .dash-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
+    .dash-card-title { font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.8px; }
+    .quick-link { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 7px; cursor: pointer; transition: background 0.15s; color: var(--text); font-size: 13px; font-weight: 500; border: 1px solid var(--border); margin-bottom: 8px; background: var(--white); }
+    .quick-link:hover { background: var(--bg); }
+    .quick-link:last-child { margin-bottom: 0; }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  </style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="logo">
+    <div class="logo-title">CONTROL PET</div>
+
+  </div>
+  <div class="nav-section">Navegación</div>
+  <div class="nav-item active" onclick="showPage('dashboard',this)"><span class="nav-dot"></span> Dashboard</div>
+  <div class="nav-item" onclick="showPage('clientes',this)"><span class="nav-dot"></span> Clientes</div>
+  <div class="nav-item" onclick="showPage('mascotas',this)"><span class="nav-dot"></span> Mascotas</div>
+  <div class="nav-item" onclick="showPage('servicios',this)"><span class="nav-dot"></span> Servicios</div>
+  <div class="nav-item" onclick="showPage('direcciones',this)"><span class="nav-dot"></span> Direcciones</div>
+  <div class="sidebar-footer">
+    <div class="sidebar-footer-label"><span class="status-dot"></span>API activa</div>
+    <div class="sidebar-footer-url" id="apiUrlDisplay"></div>
+  </div>
+</nav>
+
+<main class="main">
+  <div class="page active" id="page-dashboard">
+    <div class="topbar"><div><div class="page-label">Inicio</div><div class="page-title">Dashboard</div></div></div>
+    <div class="stats-grid">
+      <div class="stat"><div class="stat-label">Clientes</div><div class="stat-value" id="stat-clientes">—</div></div>
+      <div class="stat"><div class="stat-label">Mascotas</div><div class="stat-value" id="stat-mascotas">—</div></div>
+      <div class="stat"><div class="stat-label">Servicios</div><div class="stat-value" id="stat-servicios">—</div></div>
+      <div class="stat"><div class="stat-label">Direcciones</div><div class="stat-value" id="stat-direcciones">—</div></div>
+    </div>
+    <div class="dash-grid">
+      <div class="dash-card">
+        <div class="dash-card-title">Accesos rápidos</div>
+        <div class="quick-link" onclick="showPageByName('clientes')">👤 Gestionar Clientes</div>
+        <div class="quick-link" onclick="showPageByName('mascotas')">🐾 Gestionar Mascotas</div>
+        <div class="quick-link" onclick="showPageByName('servicios')">✂️ Gestionar Servicios</div>
+        <div class="quick-link" onclick="showPageByName('direcciones')">📍 Gestionar Direcciones</div>
+      </div>
+      <div class="dash-card">
+        <div class="dash-card-title">Información del sistema</div>
+        <table style="width:100%;font-size:12px;">
+          <tr><td style="padding:6px 0;color:var(--text-muted)">Frontend</td><td style="padding:6px 0">Netlify</td></tr>
+          <tr><td style="padding:6px 0;color:var(--text-muted)">Backend</td><td style="padding:6px 0">Render / Spring Boot</td></tr>
+          <tr><td style="padding:6px 0;color:var(--text-muted)">Base de datos</td><td style="padding:6px 0">PostgreSQL 18</td></tr>
+          <tr><td style="padding:6px 0;color:var(--text-muted)">Java</td><td style="padding:6px 0">Versión 21</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="page" id="page-clientes">
+    <div class="topbar"><div><div class="page-label">Módulo</div><div class="page-title">Clientes</div></div><button class="btn btn-primary" onclick="openModal('cliente')">+ Nuevo</button></div>
+    <div id="clientes-container"><div class="loading"><div class="spinner"></div> Cargando...</div></div>
+  </div>
+
+  <div class="page" id="page-mascotas">
+    <div class="topbar"><div><div class="page-label">Módulo</div><div class="page-title">Mascotas</div></div><button class="btn btn-primary" onclick="openModal('mascota')">+ Nueva</button></div>
+    <div id="mascotas-container"><div class="loading"><div class="spinner"></div> Cargando...</div></div>
+  </div>
+
+  <div class="page" id="page-servicios">
+    <div class="topbar"><div><div class="page-label">Módulo</div><div class="page-title">Servicios</div></div><button class="btn btn-primary" onclick="openModal('servicio')">+ Nuevo</button></div>
+    <div id="servicios-container"><div class="loading"><div class="spinner"></div> Cargando...</div></div>
+  </div>
+
+  <div class="page" id="page-direcciones">
+    <div class="topbar"><div><div class="page-label">Módulo</div><div class="page-title">Direcciones</div></div><button class="btn btn-primary" onclick="openModal('direccion')">+ Nueva</button></div>
+    <div id="direcciones-container"><div class="loading"><div class="spinner"></div> Cargando...</div></div>
+  </div>
+</main>
+
+<!-- MODALES -->
+<div class="overlay" id="modal-cliente">
+  <div class="modal">
+    <div class="modal-title" id="modal-cliente-title">Nuevo Cliente</div>
+    <input type="hidden" id="cliente-id"/>
+    <div class="form-group"><label class="form-label">Nombre</label><input class="form-input" id="cliente-nombre" placeholder=""/></div>
+    <div class="two-col">
+      <div class="form-group"><label class="form-label">Ap. Paterno</label><input class="form-input" id="cliente-apPaterno" placeholder=""/></div>
+      <div class="form-group"><label class="form-label">Ap. Materno</label><input class="form-input" id="cliente-apMaterno" placeholder=""/></div>
+    </div>
+    <div class="form-group"><label class="form-label">Email</label><input class="form-input" id="cliente-email" type="email" placeholder=""/></div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('cliente')">Cancelar</button><button class="btn btn-primary" onclick="saveCliente()">Guardar</button></div>
+  </div>
+</div>
+
+<div class="overlay" id="modal-mascota">
+  <div class="modal">
+    <div class="modal-title" id="modal-mascota-title">Nueva Mascota</div>
+    <input type="hidden" id="mascota-id"/>
+    <div class="two-col">
+      <div class="form-group"><label class="form-label">Nombre</label><input class="form-input" id="mascota-nombre" placeholder="Firulais"/></div>
+      <div class="form-group"><label class="form-label">Tipo</label><input class="form-input" id="mascota-tipo" placeholder="Perro"/></div>
+    </div>
+    <div class="two-col">
+      <div class="form-group"><label class="form-label">Sexo</label><select class="form-input" id="mascota-sexo"><option value="M">Macho</option><option value="F">Hembra</option></select></div>
+      <div class="form-group"><label class="form-label">Edad</label><input class="form-input" id="mascota-edad" type="number" placeholder="3"/></div>
+    </div>
+    <div class="two-col">
+      <div class="form-group"><label class="form-label">¿En peligro?</label><select class="form-input" id="mascota-enPeligro"><option value="false">No</option><option value="true">Sí</option></select></div>
+      <div class="form-group"><label class="form-label">ID Cliente</label><input class="form-input" id="mascota-clienteId" type="number" placeholder="1"/></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('mascota')">Cancelar</button><button class="btn btn-primary" onclick="saveMascota()">Guardar</button></div>
+  </div>
+</div>
+
+<div class="overlay" id="modal-servicio">
+  <div class="modal">
+    <div class="modal-title">Nuevo Servicio</div>
+    <input type="hidden" id="servicio-id"/>
+    <div class="form-group"><label class="form-label">Descripción</label><input class="form-input" id="servicio-descripcion" placeholder="Baño y corte"/></div>
+    <div class="form-group"><label class="form-label">Precio ($)</label><input class="form-input" id="servicio-precio" type="number" step="0.01" placeholder="150.00"/></div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('servicio')">Cancelar</button><button class="btn btn-primary" onclick="saveServicio()">Guardar</button></div>
+  </div>
+</div>
+
+<div class="overlay" id="modal-direccion">
+  <div class="modal">
+    <div class="modal-title">Nueva Dirección</div>
+    <div class="two-col">
+      <div class="form-group"><label class="form-label">Calle</label><input class="form-input" id="dir-calle" placeholder="Av. Reforma"/></div>
+      <div class="form-group"><label class="form-label">Número</label><input class="form-input" id="dir-numero" placeholder="123"/></div>
+    </div>
+    <div class="form-group"><label class="form-label">ID Cliente</label><input class="form-input" id="dir-clienteId" type="number" placeholder="1"/></div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('direccion')">Cancelar</button><button class="btn btn-primary" onclick="saveDireccion()">Guardar</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const API = 'https://mascotas-x60z.onrender.com';
+  document.getElementById('apiUrlDisplay').textContent = API;
+
+  function showPage(name, el) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById('page-' + name).classList.add('active');
+    if (el) el.classList.add('active');
+    const loaders = { clientes: loadClientes, mascotas: loadMascotas, servicios: loadServicios, direcciones: loadDirecciones, dashboard: loadStats };
+    if (loaders[name]) loaders[name]();
+  }
+
+  function showPageByName(name) {
+    const names = ['dashboard','clientes','mascotas','servicios','direcciones'];
+    showPage(name, document.querySelectorAll('.nav-item')[names.indexOf(name)]);
+  }
+
+  function toast(msg, type='success') {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.className = 'toast show' + (type==='error'?' error':'');
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  function openModal(type) { document.getElementById('modal-'+type).classList.add('open'); }
+  function closeModal(type) { document.getElementById('modal-'+type).classList.remove('open'); }
+
+  function tableWrap(title, count, html) {
+    return `<div class="table-wrap"><div class="table-header"><span class="table-title">${title}</span><span class="table-count">${count} registros</span></div><table>${html}</table></div>`;
+  }
+
+  function emptyState(icon, title, sub) {
+    return `<div class="empty"><div class="empty-icon">${icon}</div><div class="empty-title">${title}</div><div class="empty-sub">${sub}</div></div>`;
+  }
+
+  async function loadClientes() {
+    const c = document.getElementById('clientes-container');
+    c.innerHTML = '<div class="loading"><div class="spinner"></div> Cargando...</div>';
+    try {
+      const data = await fetch(API+'/cliente').then(r=>r.json());
+      if (!data.length) { c.innerHTML = emptyState('👤','Sin clientes','Crea el primer cliente.'); return; }
+      c.innerHTML = tableWrap('Lista de clientes', data.length, `<thead><tr><th>ID</th><th>Nombre completo</th><th>Email</th><th></th></tr></thead><tbody>${data.map(cl=>`<tr><td class="td-muted">#${cl.idCliente}</td><td>${cl.nombre} ${cl.apPaterno} ${cl.apMaterno}</td><td class="td-muted">${cl.email}</td><td><div class="td-actions"><button class="btn btn-edit" onclick="editCliente(${cl.idCliente},'${cl.nombre}','${cl.apPaterno}','${cl.apMaterno}','${cl.email}')">Editar</button><button class="btn btn-danger" onclick="deleteCliente(${cl.idCliente})">Eliminar</button></div></td></tr>`).join('')}</tbody>`);
+    } catch { c.innerHTML = emptyState('⚠️','Error de conexión','No se pudo conectar con la API.'); }
+  }
+
+  function editCliente(id,nombre,apPaterno,apMaterno,email) {
+    document.getElementById('modal-cliente-title').textContent='Editar Cliente';
+    document.getElementById('cliente-id').value=id;
+    document.getElementById('cliente-nombre').value=nombre;
+    document.getElementById('cliente-apPaterno').value=apPaterno;
+    document.getElementById('cliente-apMaterno').value=apMaterno;
+    document.getElementById('cliente-email').value=email;
+    openModal('cliente');
+  }
+
+  async function saveCliente() {
+    const id=document.getElementById('cliente-id').value;
+    const body={nombre:document.getElementById('cliente-nombre').value,apPaterno:document.getElementById('cliente-apPaterno').value,apMaterno:document.getElementById('cliente-apMaterno').value,email:document.getElementById('cliente-email').value};
+    const res=await fetch(id?`${API}/cliente/${id}`:`${API}/cliente`,{method:id?'PUT':'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    if(res.ok){toast(id?'Cliente actualizado':'Cliente creado');closeModal('cliente');document.getElementById('cliente-id').value='';document.getElementById('modal-cliente-title').textContent='Nuevo Cliente';loadClientes();}
+    else toast('Error al guardar','error');
+  }
+
+  async function deleteCliente(id) {
+    if(!confirm('¿Eliminar este cliente?'))return;
+    const res=await fetch(`${API}/cliente/${id}`,{method:'DELETE'});
+    if(res.ok){toast('Cliente eliminado');loadClientes();}else toast('Error','error');
+  }
+
+  async function loadMascotas() {
+    const c=document.getElementById('mascotas-container');
+    c.innerHTML='<div class="loading"><div class="spinner"></div> Cargando...</div>';
+    try {
+      const data=await fetch(API+'/mascota').then(r=>r.json());
+      if(!data.length){c.innerHTML=emptyState('🐾','Sin mascotas','Registra la primera mascota.');return;}
+      c.innerHTML=tableWrap('Lista de mascotas',data.length,`<thead><tr><th>ID</th><th>Nombre</th><th>Tipo</th><th>Sexo</th><th>Edad</th><th>Estado</th><th></th></tr></thead><tbody>${data.map(m=>`<tr><td class="td-muted">#${m.idMascota}</td><td>${m.nombre}</td><td class="td-muted">${m.tipo}</td><td class="td-muted">${m.sexo==='M'?'Macho':'Hembra'}</td><td class="td-muted">${m.edad} años</td><td><span class="badge ${m.enPeligro?'badge-red':'badge-green'}">${m.enPeligro?'En peligro':'Saludable'}</span></td><td><div class="td-actions"><button class="btn btn-edit" onclick="editMascota(${m.idMascota},'${m.nombre}','${m.tipo}','${m.sexo}',${m.edad},${m.enPeligro})">Editar</button><button class="btn btn-danger" onclick="deleteMascota(${m.idMascota})">Eliminar</button></div></td></tr>`).join('')}</tbody>`);
+    } catch{c.innerHTML=emptyState('⚠️','Error de conexión','');}
+  }
+
+  function editMascota(id,nombre,tipo,sexo,edad,enPeligro) {
+    document.getElementById('modal-mascota-title').textContent='Editar Mascota';
+    document.getElementById('mascota-id').value=id;
+    document.getElementById('mascota-nombre').value=nombre;
+    document.getElementById('mascota-tipo').value=tipo;
+    document.getElementById('mascota-sexo').value=sexo;
+    document.getElementById('mascota-edad').value=edad;
+    document.getElementById('mascota-enPeligro').value=String(enPeligro);
+    openModal('mascota');
+  }
+
+  async function saveMascota() {
+    const id=document.getElementById('mascota-id').value;
+    const body={nombre:document.getElementById('mascota-nombre').value,tipo:document.getElementById('mascota-tipo').value,sexo:document.getElementById('mascota-sexo').value,edad:parseInt(document.getElementById('mascota-edad').value),enPeligro:document.getElementById('mascota-enPeligro').value==='true',cliente:{idCliente:parseInt(document.getElementById('mascota-clienteId').value)}};
+    const res=await fetch(id?`${API}/mascota/${id}`:`${API}/mascota`,{method:id?'PUT':'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    if(res.ok){toast(id?'Mascota actualizada':'Mascota creada');closeModal('mascota');document.getElementById('mascota-id').value='';loadMascotas();}
+    else toast('Error','error');
+  }
+
+  async function deleteMascota(id) {
+    if(!confirm('¿Eliminar esta mascota?'))return;
+    const res=await fetch(`${API}/mascota/${id}`,{method:'DELETE'});
+    if(res.ok){toast('Mascota eliminada');loadMascotas();}else toast('Error','error');
+  }
+
+  async function loadServicios() {
+    const c=document.getElementById('servicios-container');
+    c.innerHTML='<div class="loading"><div class="spinner"></div> Cargando...</div>';
+    try {
+      const data=await fetch(API+'/servicio').then(r=>r.json());
+      if(!data.length){c.innerHTML=emptyState('✂️','Sin servicios','Agrega el primer servicio.');return;}
+      c.innerHTML=tableWrap('Lista de servicios',data.length,`<thead><tr><th>ID</th><th>Descripción</th><th>Precio</th><th></th></tr></thead><tbody>${data.map(s=>`<tr><td class="td-muted">#${s.idServicio}</td><td>${s.descripcion}</td><td>$${s.precio.toFixed(2)}</td><td><div class="td-actions"><button class="btn btn-edit" onclick="editServicio(${s.idServicio},'${s.descripcion}',${s.precio})">Editar</button><button class="btn btn-danger" onclick="deleteServicio(${s.idServicio})">Eliminar</button></div></td></tr>`).join('')}</tbody>`);
+    } catch{c.innerHTML=emptyState('⚠️','Error de conexión','');}
+  }
+
+  function editServicio(id,descripcion,precio){document.getElementById('servicio-id').value=id;document.getElementById('servicio-descripcion').value=descripcion;document.getElementById('servicio-precio').value=precio;openModal('servicio');}
+
+  async function saveServicio() {
+    const id=document.getElementById('servicio-id').value;
+    const body={descripcion:document.getElementById('servicio-descripcion').value,precio:parseFloat(document.getElementById('servicio-precio').value)};
+    const res=await fetch(id?`${API}/servicio/${id}`:`${API}/servicio`,{method:id?'PUT':'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    if(res.ok){toast(id?'Servicio actualizado':'Servicio creado');closeModal('servicio');document.getElementById('servicio-id').value='';loadServicios();}
+    else toast('Error','error');
+  }
+
+  async function deleteServicio(id){if(!confirm('¿Eliminar?'))return;const res=await fetch(`${API}/servicio/${id}`,{method:'DELETE'});if(res.ok){toast('Servicio eliminado');loadServicios();}else toast('Error','error');}
+
+  async function loadDirecciones() {
+    const c=document.getElementById('direcciones-container');
+    c.innerHTML='<div class="loading"><div class="spinner"></div> Cargando...</div>';
+    try {
+      const data=await fetch(API+'/direccion').then(r=>r.json());
+      if(!data.length){c.innerHTML=emptyState('📍','Sin direcciones','Agrega la primera dirección.');return;}
+      c.innerHTML=tableWrap('Lista de direcciones',data.length,`<thead><tr><th>ID</th><th>Calle</th><th>Número</th><th></th></tr></thead><tbody>${data.map(d=>`<tr><td class="td-muted">#${d.idDireccion}</td><td>${d.calle}</td><td class="td-muted">${d.numero}</td><td><div class="td-actions"><button class="btn btn-danger" onclick="deleteDireccion(${d.idDireccion})">Eliminar</button></div></td></tr>`).join('')}</tbody>`);
+    } catch{c.innerHTML=emptyState('⚠️','Error de conexión','');}
+  }
+
+  async function saveDireccion(){const body={calle:document.getElementById('dir-calle').value,numero:document.getElementById('dir-numero').value,cliente:{idCliente:parseInt(document.getElementById('dir-clienteId').value)}};const res=await fetch(`${API}/direccion`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});if(res.ok){toast('Dirección creada');closeModal('direccion');loadDirecciones();}else toast('Error','error');}
+
+  async function deleteDireccion(id){if(!confirm('¿Eliminar?'))return;const res=await fetch(`${API}/direccion/${id}`,{method:'DELETE'});if(res.ok){toast('Dirección eliminada');loadDirecciones();}else toast('Error','error');}
+
+  async function loadStats() {
+    try {
+      const [c,m,s,d]=await Promise.all([fetch(API+'/cliente').then(r=>r.json()),fetch(API+'/mascota').then(r=>r.json()),fetch(API+'/servicio').then(r=>r.json()),fetch(API+'/direccion').then(r=>r.json())]);
+      document.getElementById('stat-clientes').textContent=c.length;
+      document.getElementById('stat-mascotas').textContent=m.length;
+      document.getElementById('stat-servicios').textContent=s.length;
+      document.getElementById('stat-direcciones').textContent=d.length;
+    } catch{}
+  }
+
+  loadStats();
+</script>
+</body>
+</html>

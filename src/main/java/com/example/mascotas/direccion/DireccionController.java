@@ -45,6 +45,20 @@ public class DireccionController {
                 .buildAndExpand(direccionGuardada.getIdDireccion()).toUri();
         return ResponseEntity.created(url).body(direccionGuardada);
     }
+    @PutMapping("/{id}")
+    public ResponseEntity<Direccion> update(@PathVariable Long id, @RequestBody Direccion direccion) {
+        Optional<Direccion> direccionOpcional = direccionRepository.findById(id);
+        if (direccionOpcional.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        Optional<Cliente> clienteOpcional = clienteRepository.findById(direccion.getCliente().getIdCliente());
+        if (clienteOpcional.isEmpty()) {
+            return ResponseEntity.unprocessableEntity().build();
+        }
+        direccion.setIdDireccion(id);
+        direccion.setCliente(clienteOpcional.get());
+        return ResponseEntity.ok(direccionRepository.save(direccion));
+    }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
